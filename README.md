@@ -1,4 +1,4 @@
-post_tonal
+PostTonal
 ==========
 
 Pitch-class set analysis tool
