@@ -3,10 +3,11 @@ module PostTonal
 
 		require 'post_tonal/pitch_class'
 
-		attr_reader :pitch_classes
+		attr_reader :pitch_classes, :normal_form
 
 		def initialize
 			@pitch_classes = []
+			@normal_form = []
 		end
 
 		# Add a pitch to the pitch class set
@@ -37,18 +38,70 @@ module PostTonal
 
 		end
 
-		def normal_form
+		def eql?(pitch_class_set)
+			return false if @pitch_classes.size != pitch_class_set.pitch_classes.size
 
+			@normal_form.each_with_index do |pitch_class, i|
+				return false if !pitch_class_set.normal_form[i].eql?(pitch_class)
+			end
+
+			true
 		end
 
-		def prime_form
+		def ==(pitch_class_set)
+			eql? pitch_class_set
+		end
 
+		def to_s
+			"PitchClassSet: [#{@pitch_classes}]"
 		end
 
 		protected
 
 		def normalize
-			
+			#puts "Normalize"
+			normal = @pitch_classes.sort { |x, y| x.value <=> y.value }
+
+			newLen = normal.last.value - normal.first.value
+			newLen += 12 if newLen < 0
+			newLen += 12 if newLen == 1 && normal.size > 2
+
+			shortest = {:array => normal.dup, :length => newLen}
+
+			#puts "Shortest a: #{shortest}"
+
+			0.upto(normal.size - 1) do |q|
+				#Rotate
+				normal.push normal.shift
+
+				newLen = normal.last.value - normal.first.value
+				newLen += 12 if newLen < 0
+				newLen += 12 if newLen == 1 && normal.size > 2
+
+				if newLen < shortest[:length]
+					shortest = {:array => normal.dup, :length => newLen}
+					#puts "Shortest b: #{shortest}"
+				elsif newLen == shortest[:length]
+					(normal.size - 1).downto(q) do |r|
+
+						newLen = normal[r].value - normal.first.value
+						newLen += 12 if newLen < 0
+						newLen += 12 if newLen == 1 && normal.size > 2
+
+						sNewLen = shortest[:array][r].value - shortest[:array].first.value
+						sNewLen += 12 if sNewLen < 0
+						sNewLen += 12 if sNewLen == 1 && normal.size > 2
+
+						if newLen < sNewLen
+							shortest = {:array => normal.dup, :length => newLen}
+							#puts "Shortest c[#{newLen}]: #{shortest}"
+							break
+						end
+					end
+				end
+			end
+
+			@normal_form = shortest[:array]
 		end
 
 	end

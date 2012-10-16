@@ -9,5 +9,17 @@ module PostTonal
 			@value = NoteParser.integer_value(note_name_or_integer)
 			@octave = octave
 		end
+
+		def to_s
+			"[#{@value}, oct.#{@octave}]"
+		end
+
+		def eql?(pitch_class)
+			return pitch_class.value == @value && pitch_class.octave == @octave
+		end
+
+		def ==(pitch_class)
+			eql? pitch_class
+		end
 	end
 end
