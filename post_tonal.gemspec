@@ -8,6 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.author     = 'Eric Rubio'
   s.email       = 'penmanglewood@fastmail.fm'
+  s.homepage    = 'https://github.com/penmanglewood/post_tonal'
   s.summary     = %q{Pitch-class set analysis library}
   s.description = %q{Ruby library for analyzing pitch-class sets according to post-tonal theory}
   s.files         = `git ls-files`.split("\n")

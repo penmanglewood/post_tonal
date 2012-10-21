@@ -1,5 +1,8 @@
 #CHANGELOG
 
+####October 21, 2012 [0.1.1.pre]
+-Add homepage information to gem specification
+
 ####October 21, 2012 [0.1.0.pre]
 -Implement transposition in PitchClassSet
 -Change normal_form, inversion, and transpose so that they each return a PitchClassSet
