@@ -48,7 +48,7 @@ class PitchClassSetTest < Test::Unit::TestCase
 		@p1.add_pitch(2)
 
 		[0,1,2].each do |n|
-			assert_equal(@p1.pitch_classes[n], @p1.normal_form[n])
+			assert_equal(@p1.pitch_classes[n], @p1.normal_form.pitch_classes[n])
 		end
 
 		@p2 = PostTonal::PitchClassSet.new
@@ -57,7 +57,7 @@ class PitchClassSetTest < Test::Unit::TestCase
 		@p2.add_pitch(11)
 
 		[10,11,0].each_with_index do |n, i|
-			assert_equal(n, @p2.normal_form[i].value)
+			assert_equal(n, @p2.normal_form.pitch_classes[i].value)
 		end
 
 		@p3 = PostTonal::PitchClassSet.new
@@ -67,7 +67,7 @@ class PitchClassSetTest < Test::Unit::TestCase
 		@p3.add_pitch(9)
 
 		[9,0,3,4].each_with_index do |n, i|
-			assert_equal(n, @p3.normal_form[i].value)
+			assert_equal(n, @p3.normal_form.pitch_classes[i].value)
 		end
 
 		@p4 = PostTonal::PitchClassSet.new
@@ -77,7 +77,7 @@ class PitchClassSetTest < Test::Unit::TestCase
 		@p4.add_pitch(8)
 
 		[0,3,4,8].each_with_index do |n, i|
-			assert_equal(n, @p4.normal_form[i].value)
+			assert_equal(n, @p4.normal_form.pitch_classes[i].value)
 		end
 
 		@p5 = PostTonal::PitchClassSet.new
@@ -87,7 +87,7 @@ class PitchClassSetTest < Test::Unit::TestCase
 		@p5.add_pitch(11)
 
 		[10,11,0,1].each_with_index do |n, i|
-			assert_equal(n, @p5.normal_form[i].value)
+			assert_equal(n, @p5.normal_form.pitch_classes[i].value)
 		end
 
 		@p6 = PostTonal::PitchClassSet.new
@@ -97,7 +97,7 @@ class PitchClassSetTest < Test::Unit::TestCase
 		@p6.add_pitch(4)
 
 		[0,1,4,8].each_with_index do |n, i|
-			assert_equal(n, @p6.normal_form[i].value)
+			assert_equal(n, @p6.normal_form.pitch_classes[i].value)
 		end
 
 		@p7 = PostTonal::PitchClassSet.new
@@ -107,7 +107,7 @@ class PitchClassSetTest < Test::Unit::TestCase
 		@p7.add_pitch(9)
 
 		[0,3,6,9].each_with_index do |n, i|
-			assert_equal(n, @p7.normal_form[i].value)
+			assert_equal(n, @p7.normal_form.pitch_classes[i].value)
 		end
 
 		@p7 = PostTonal::PitchClassSet.new
@@ -116,7 +116,43 @@ class PitchClassSetTest < Test::Unit::TestCase
 		@p7.add_pitch(7)
 
 		[6,7,0].each_with_index do |n, i|
-			assert_equal(n, @p7.normal_form[i].value)
+			assert_equal(n, @p7.normal_form.pitch_classes[i].value)
+		end
+	end
+
+	def test_inversion
+		@p1 = PostTonal::PitchClassSet.new
+		0.upto(11) do |i|
+			@p1.add_pitch(i)
+		end
+
+		@p1i = PostTonal::PitchClassSet.new
+		@p1i.add_pitch(0)
+		11.downto(1) do |i|
+			@p1i.add_pitch(i)
+		end
+
+		assert_equal(@p1i, @p1.inversion, "Should be inverted")
+	end
+
+	def test_transposition
+		@p1 = PostTonal::PitchClassSet.new
+		0.upto(11) do |i|
+			@p1.add_pitch(i)
+		end
+
+		#transposition degree
+		0.upto(200) do |t|
+			@p1t = PostTonal::PitchClassSet.new
+			t.upto(t+11) do |i|
+				oct = 0
+				oct = i / 12
+				oct -= 1 if i < 0 && i % 12 == 0
+
+				@p1t.add_pitch(i, oct)
+			end
+
+			assert_equal(@p1t, @p1.transpose(t), "Should transpose #{t} degrees")
 		end
 	end
 

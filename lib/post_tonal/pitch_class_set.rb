@@ -3,11 +3,12 @@ module PostTonal
 
 		require 'post_tonal/pitch_class'
 
-		attr_reader :pitch_classes, :normal_form
+		attr_reader :pitch_classes
 
-		def initialize
-			@pitch_classes = []
-			@normal_form = []
+		def initialize(pitch_classes = nil)
+			@pitch_classes = pitch_classes || []
+			@normalized_pitch_classes = pitch_classes ? self.class.to_normal_form(@pitch_classes) : []
+			@inverted_pitch_classes = pitch_classes ? invert(@pitch_classes) : []
 		end
 
 		# Add a pitch to the pitch class set
@@ -28,21 +29,18 @@ module PostTonal
 
 			if !@pitch_classes.any? { |p| p.value == pc.value && p.octave == pc.octave }
 				@pitch_classes << pc
-				normalize
+				@normalized_pitch_classes = self.class.to_normal_form(@pitch_classes)
+				@inverted_pitch_classes = invert(@pitch_classes)
 			end
 
 			pc
 		end
 
-		def interval_vector
-
-		end
-
 		def eql?(pitch_class_set)
 			return false if @pitch_classes.size != pitch_class_set.pitch_classes.size
 
-			@normal_form.each_with_index do |pitch_class, i|
-				return false if !pitch_class_set.normal_form[i].eql?(pitch_class)
+			@normalized_pitch_classes.each_with_index do |pitch_class, i|
+				return false if !pitch_class_set.normal_form.pitch_classes[i].eql?(pitch_class)
 			end
 
 			true
@@ -53,14 +51,12 @@ module PostTonal
 		end
 
 		def to_s
-			"PitchClassSet: [#{@pitch_classes}]"
+			"PitchClassSet: #{@pitch_classes}"
 		end
 
-		protected
-
-		def normalize
-			#puts "Normalize"
-			normal = @pitch_classes.sort { |x, y| x.value <=> y.value }
+		# Returns the normal form of an array of pitch classes
+		def self.to_normal_form(pitch_classes)
+			normal = pitch_classes.sort { |x, y| x.value <=> y.value }
 
 			newLen = normal.last.value - normal.first.value
 			newLen += 12 if newLen < 0
@@ -68,10 +64,8 @@ module PostTonal
 
 			shortest = {:array => normal.dup, :length => newLen}
 
-			#puts "Shortest a: #{shortest}"
-
 			0.upto(normal.size - 1) do |q|
-				#Rotate
+				# Rotate
 				normal.push normal.shift
 
 				newLen = normal.last.value - normal.first.value
@@ -80,7 +74,6 @@ module PostTonal
 
 				if newLen < shortest[:length]
 					shortest = {:array => normal.dup, :length => newLen}
-					#puts "Shortest b: #{shortest}"
 				elsif newLen == shortest[:length]
 					(normal.size - 1).downto(q) do |r|
 
@@ -94,14 +87,58 @@ module PostTonal
 
 						if newLen < sNewLen
 							shortest = {:array => normal.dup, :length => newLen}
-							#puts "Shortest c[#{newLen}]: #{shortest}"
 							break
 						end
 					end
 				end
 			end
 
-			@normal_form = shortest[:array]
+			shortest[:array]
+		end
+
+		# Returns a PitchClassSet of the inversino of the current PitchClassSet
+		def inversion
+			self.class.new(@inverted_pitch_classes)
+		end
+
+		# Returns a PitchClassSet of the current PitchClassSet in normal form
+		def normal_form
+			self.class.new(@normalized_pitch_classes)
+		end
+
+		# Transposes the set by a degree (integer)
+		# Returns PitchClassSet of the transposed set
+		def transpose(degree)
+			transposed = self.class.new
+
+			@pitch_classes.each do |pitch_class|
+				oct = pitch_class.octave
+				val = pitch_class.value
+
+				val += degree
+
+				oct += val / 12
+				oct -= 1 if val < 0 && val % 12 == 0
+
+				transposed.add_pitch(val, oct)
+			end
+
+			transposed
+		end
+
+		private
+
+		# Inverts an array of pitch classes. The PitchClass attribute octave may become invalid after inversion.
+		# Returns a PitchClassSet of the inverted pitch classes
+		def invert(pitch_classes)
+			inverted = []
+
+			pitch_classes.each do |pitch_class|
+				pc = PitchClass.new(12 - pitch_class.value, pitch_class.octave)
+				inverted << pc
+			end
+
+			inverted
 		end
 
 	end
