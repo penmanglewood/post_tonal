@@ -118,6 +118,20 @@ class PitchClassSetTest < Test::Unit::TestCase
 		[6,7,0].each_with_index do |n, i|
 			assert_equal(n, @p7.normal_form.pitch_classes[i].value)
 		end
+
+		@p8 = PostTonal::PitchClassSet.new
+		@p8.add_pitch(0)
+		@p8.add_pitch(3)
+		@p8.add_pitch(8)
+		@p8.add_pitch(9)
+
+		@p8n = PostTonal::PitchClassSet.new
+		@p8n.add_pitch(8)
+		@p8n.add_pitch(9)
+		@p8n.add_pitch(0)
+		@p8n.add_pitch(3)
+
+		assert_equal(@p8n, @p8.normal_form, "Normal form of #{@p8} should be #{@p8n}")
 	end
 
 	def test_inversion
@@ -156,4 +170,117 @@ class PitchClassSetTest < Test::Unit::TestCase
 		end
 	end
 
+	def test_prime_form
+		@p1 = PostTonal::PitchClassSet.new
+		@p1.add_pitch(0)
+		@p1.add_pitch(1)
+		@p1.add_pitch(4)
+		@p1.add_pitch(7)
+
+		@p1p = PostTonal::PitchClassSet.new
+		@p1p.add_pitch(0)
+		@p1p.add_pitch(1)
+		@p1p.add_pitch(4)
+		@p1p.add_pitch(7)
+
+		assert_equal(@p1p, @p1.prime_form)
+
+
+		@p2 = PostTonal::PitchClassSet.new
+		@p2.add_pitch(6)
+		@p2.add_pitch(7)
+		@p2.add_pitch(8)
+
+		@p2p = PostTonal::PitchClassSet.new
+		@p2p.add_pitch(0)
+		@p2p.add_pitch(1)
+		@p2p.add_pitch(2)
+
+		assert_equal(@p2p, @p2.prime_form)
+
+		@p3 = PostTonal::PitchClassSet.new
+		@p3.add_pitch(0)
+		@p3.add_pitch(3)
+		@p3.add_pitch(8)
+		@p3.add_pitch(9)
+
+		@p3p = PostTonal::PitchClassSet.new
+		@p3p.add_pitch(0)
+		@p3p.add_pitch(1)
+		@p3p.add_pitch(4)
+		@p3p.add_pitch(7)
+
+		assert_equal(@p3p, @p3.prime_form)
+
+
+		@p4 = PostTonal::PitchClassSet.new
+		@p4.add_pitch(1)
+		@p4.add_pitch(5)
+		@p4.add_pitch(6)
+		@p4.add_pitch(7)
+
+		@p4p = PostTonal::PitchClassSet.new
+		@p4p.add_pitch(0)
+		@p4p.add_pitch(1)
+		@p4p.add_pitch(2)
+		@p4p.add_pitch(6)
+
+		assert_equal(@p4p, @p4.prime_form)
+
+		@p5 = PostTonal::PitchClassSet.new
+		@p5.add_pitch(0)
+		@p5.add_pitch(2)
+		@p5.add_pitch(4)
+		@p5.add_pitch(7)
+		@p5.add_pitch(11)
+
+		@p5p = PostTonal::PitchClassSet.new
+		@p5p.add_pitch(0)
+		@p5p.add_pitch(1)
+		@p5p.add_pitch(3)
+		@p5p.add_pitch(5)
+		@p5p.add_pitch(8)
+
+		assert_equal(@p5p, @p5.prime_form)
+
+		@p6 = PostTonal::PitchClassSet.new
+		@p6.add_pitch(3)
+		@p6.add_pitch(6)
+		@p6.add_pitch(7)
+		@p6.add_pitch(8)
+		@p6.add_pitch(9)
+		@p6.add_pitch(10)
+
+		@p6p = PostTonal::PitchClassSet.new
+		@p6p.add_pitch(0)
+		@p6p.add_pitch(1)
+		@p6p.add_pitch(2)
+		@p6p.add_pitch(3)
+		@p6p.add_pitch(4)
+		@p6p.add_pitch(7)
+
+		assert_equal(@p6p, @p6.prime_form)
+
+		@p7 = PostTonal::PitchClassSet.new
+		@p7.add_pitch(0)
+		@p7.add_pitch(2)
+		@p7.add_pitch(5)
+		@p7.add_pitch(6)
+		@p7.add_pitch(7)
+		@p7.add_pitch(9)
+		@p7.add_pitch(10)
+		@p7.add_pitch(11)
+
+		@p7p = PostTonal::PitchClassSet.new
+		@p7p.add_pitch(0)
+		@p7p.add_pitch(1)
+		@p7p.add_pitch(2)
+		@p7p.add_pitch(4)
+		@p7p.add_pitch(5)
+		@p7p.add_pitch(6)
+		@p7p.add_pitch(7)
+		@p7p.add_pitch(9)
+
+		assert_equal(@p7p, @p7.prime_form)
+	end
 end

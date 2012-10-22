@@ -7,8 +7,9 @@ module PostTonal
 
 		def initialize(pitch_classes = nil)
 			@pitch_classes = pitch_classes || []
-			@normalized_pitch_classes = pitch_classes ? self.class.to_normal_form(@pitch_classes) : []
-			@inverted_pitch_classes = pitch_classes ? invert(@pitch_classes) : []
+			@normalized_pitch_classes = @pitch_classes.size > 0 ? self.class.to_normal_form(@pitch_classes) : []
+			@inverted_pitch_classes = @pitch_classes.size > 0 ? invert(@pitch_classes) : []
+			@prime_pitch_classes = @pitch_classes.size > 0 ? to_prime_form : []
 		end
 
 		# Add a pitch to the pitch class set
@@ -31,16 +32,17 @@ module PostTonal
 				@pitch_classes << pc
 				@normalized_pitch_classes = self.class.to_normal_form(@pitch_classes)
 				@inverted_pitch_classes = invert(@pitch_classes)
+				@prime_pitch_classes = to_prime_form
 			end
 
 			pc
 		end
 
 		def eql?(pitch_class_set)
-			return false if @pitch_classes.size != pitch_class_set.pitch_classes.size
+			return false if @pitch_classes.size != pitch_class_set.pitch_classes.size || @pitch_classes.size == 0
 
-			@normalized_pitch_classes.each_with_index do |pitch_class, i|
-				return false if !pitch_class_set.normal_form.pitch_classes[i].eql?(pitch_class)
+			@pitch_classes.each_with_index do |pitch_class, i|
+				return false if !pitch_class.eql?(pitch_class_set.pitch_classes[i])
 			end
 
 			true
@@ -75,19 +77,14 @@ module PostTonal
 				if newLen < shortest[:length]
 					shortest = {:array => normal.dup, :length => newLen}
 				elsif newLen == shortest[:length]
-					(normal.size - 1).downto(q) do |r|
 
-						newLen = normal[r].value - normal.first.value
-						newLen += 12 if newLen < 0
-						newLen += 12 if newLen == 1 && normal.size > 2
+					rs = shortest[:array].reverse
+					normal.reverse.each_with_index do |pitch_class, i|
+						this_dist = (pitch_class.value - normal.first.value).abs
+						that_dist = (rs[i].value - rs.last.value).abs
 
-						sNewLen = shortest[:array][r].value - shortest[:array].first.value
-						sNewLen += 12 if sNewLen < 0
-						sNewLen += 12 if sNewLen == 1 && normal.size > 2
-
-						if newLen < sNewLen
-							shortest = {:array => normal.dup, :length => newLen}
-							break
+						if this_dist < that_dist
+							shortest = {:array => normal, :length => newLen}
 						end
 					end
 				end
@@ -106,9 +103,21 @@ module PostTonal
 			self.class.new(@normalized_pitch_classes)
 		end
 
-		# Transposes the set by a degree (integer)
+		# Returns a PitchClassSet of the current PitchClassSet in prime form
+		def prime_form
+			prime1 = normal_form.transpose_to_zero
+			prime2 = inversion.normal_form.transpose_to_zero
+			return prime2 if prime2.is_more_packed_than? prime1
+			prime1
+		end
+
+		# Transposes the set
+		# 
+		# degree - The number of steps to transpose. May be positive or negative
+		# reset_octave - If true, resets octave attribute to 0 for all pitch classes
+		# 
 		# Returns PitchClassSet of the transposed set
-		def transpose(degree)
+		def transpose(degree, reset_octave = false)
 			transposed = self.class.new
 
 			@pitch_classes.each do |pitch_class|
@@ -117,8 +126,12 @@ module PostTonal
 
 				val += degree
 
-				oct += val / 12
-				oct -= 1 if val < 0 && val % 12 == 0
+				if reset_octave
+					oct = 0
+				else
+					oct += val / 12
+					oct -= 1 if val < 0 && val % 12 == 0
+				end
 
 				transposed.add_pitch(val, oct)
 			end
@@ -126,7 +139,34 @@ module PostTonal
 			transposed
 		end
 
-		private
+		def reset_octave
+			ro = []
+
+			@pitch_classes.each do |pitch_class|
+				ro << PitchClass.new(pitch_class.value)
+			end
+
+			self.class.new(ro)
+		end
+
+		# Check if this pitch class set is more tightly packed to the left than the comparison pitch class set.
+		#
+		# Returns false if less tightly packed or if is the same set
+		def is_more_packed_than?(pitch_class_set)
+			return false if (@pitch_classes.size != pitch_class_set.pitch_classes.size || @pitch_classes.size == 0) || eql?(pitch_class_set)
+
+			rpcs = pitch_class_set.pitch_classes.reverse
+			@pitch_classes.reverse.each_with_index do |pitch_class, i|
+				this_dist = (pitch_class.value - @pitch_classes.first.value).abs
+				that_dist = (rpcs[i].value - rpcs.last.value).abs
+
+				return true if this_dist < that_dist
+			end
+
+			false
+		end
+
+		protected
 
 		# Inverts an array of pitch classes. The PitchClass attribute octave may become invalid after inversion.
 		# Returns a PitchClassSet of the inverted pitch classes
@@ -139,6 +179,23 @@ module PostTonal
 			end
 
 			inverted
+		end
+
+		# Returns the normal form of an array of pitch classes
+		def to_prime_form
+			#prime1 = normal_form.transpose_to_zero.pitch_classes
+			#prime2 = inversion.normal_form.transpose_to_zero
+
+			#return prime1.pitch_classes if prime1.is_more_packed_than? prime2
+			#return prime2.pitch_classes_classes
+			[]
+		end
+
+		def transpose_to_zero
+			dist = 12 - @pitch_classes[0].value
+			"TT0: #{@pitch_classes}, dist: #{dist}"
+			return transpose(dist, true) if dist % 12 != 0
+			self
 		end
 
 	end
