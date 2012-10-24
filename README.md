@@ -48,3 +48,7 @@ All transformations return a ```new``` PitchClassSet object, and are thus non-de
 set.inversion.transpose(6) #Transpose the inversion of the set by +6  
 set.normal_form.inversion #Invert the normal form of the set
 ```
+
+#License
+
+post_tonal is copyright &copy; 2012 Eric Rubio. It is free software, and may be redistributed under the terms specified in the LICENSE file.
