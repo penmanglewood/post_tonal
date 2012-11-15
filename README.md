@@ -20,11 +20,11 @@ PostTonal is a Ruby library for analyzing sets of musical pitches. It's based on
 set = PostTonal::PitchClassSet.new
 
 #Add the set [C, C#, D#, E, G] <-(recognize this collection?)  
-set.add_pitch(0) # or set.add_pitch('c')  
-set.add_pitch(1) # or set.add_pitch('c#')  
-set.add_pitch(3) # or set.add_pitch('d#')  
-set.add_pitch(4) # or set.add_pitch('e')  
-set.add_pitch(6) # or set.add_pitch('g')  
+set.add_pitch 0  # or set.add_pitch 'c'  
+set.add_pitch 1  # or set.add_pitch 'c#'  
+set.add_pitch 3  # or set.add_pitch 'd#'  
+set.add_pitch 4  # or set.add_pitch 'e'  
+set.add_pitch 6  # or set.add_pitch 'g'  
 ```
 
 ##Transformations
@@ -40,7 +40,7 @@ puts set.prime_form
 puts set.inversion
 
 #Get a transposition of the set
-puts set.transpose(4)
+puts set.transpose 4
 ```
 
 All transformations return a ```new``` PitchClassSet object, and are thus non-destructive. Transformations can be chained:  
